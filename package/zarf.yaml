@@ -1,0 +1,38 @@
+kind: ZarfPackageConfig
+metadata:
+  name: tfstate-test
+  architecture: amd64
+  yolo: true
+
+variables:
+- name: TF_STATE_BUCKET_NAME # would be nice to be able to modify this variable with the TF output
+- name: REGION
+  
+components:
+- name: create-state-bucket
+  actions:
+    onDeploy:
+      before:
+        - cmd: "terraform init"
+          dir: tfstate
+        - cmd: "terraform apply --auto-approve -var='bucket_prefix=###ZARF_PKG_TMPL_TF_STATE_BUCKET_NAME###'"
+          dir: tfstate
+        - cmd: terraform output -raw state_bucket_name # todo: copy to state bucket
+          dir: tfstate
+          setVariables:
+            - name: STATE_BUCKET_NAME 
+
+
+- name: create-loki-bucket
+  actions:
+    onDeploy:
+      before:
+        - cmd: |
+            terraform init -backend-config="bucket=${ZARF_VAR_STATE_BUCKET_NAME}" -backend-config="key=tfstate/###ZARF_PKG_TMPL_REGION###/${ZARF_VAR_STATE_BUCKET_NAME}-bucket.tfstate" -backend-config="region=###ZARF_PKG_TMPL_REGION###"
+          dir: loki
+        - cmd: "terraform apply --auto-approve"
+          dir: loki
+    
+  
+
+  
