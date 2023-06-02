@@ -21,7 +21,12 @@ components:
           dir: tfstate
           setVariables:
             - name: STATE_BUCKET_NAME 
-
+    onRemove:
+      before:
+        - cmd: terraform destroy -auto-approve
+          dir: tfstate
+        - cmd: rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
+          dir: tfstate
 
 - name: create-loki-bucket
   actions:
@@ -30,9 +35,13 @@ components:
         - cmd: |
             terraform init -backend-config="bucket=${ZARF_VAR_STATE_BUCKET_NAME}" -backend-config="key=tfstate/###ZARF_PKG_TMPL_REGION###/${ZARF_VAR_STATE_BUCKET_NAME}-bucket.tfstate" -backend-config="region=###ZARF_PKG_TMPL_REGION###"
           dir: loki
-        - cmd: "terraform apply --auto-approve"
+        - cmd: "terraform apply -auto-approve"
+          dir: loki
+    onRemove:
+      before:
+        - cmd: "terraform destroy -auto-approve"
+          dir: loki
+        - cmd: rm -rf .terraform .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup
           dir: loki
     
-  
-
-  
+# todo: should we init every time we do an upgrade?

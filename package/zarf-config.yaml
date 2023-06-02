@@ -1,0 +1,8 @@
+package:
+  create:
+    set: 
+      TF_STATE_BUCKET_NAME: 'gedd-dev'
+      REGION: 'us-west-2'
+  # deploy: # can set variables on deploy, but these are ZARF_VAR not templates
+  #   set:
+  #     REGION: 'us-west-2'

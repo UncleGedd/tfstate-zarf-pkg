@@ -5,6 +5,7 @@ variable "region" {
 
 variable "bucket_prefix" {
   type = string
+  default = "state-bucket"
 }
 
 module "s3_bucket" {
